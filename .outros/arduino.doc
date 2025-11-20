@@ -1,5 +1,6 @@
 /* esp_dht_final.ino
-   - ARQUITETURA DE ALERTA/HISTÓRICO SEPARADA (VERSÃO COMPLETA)
+   - VERSÃO CORRIGIDA PARA CORS (ACEITA OPTIONS/PREFLIGHT)
+   - ARQUITETURA DE ALERTA/HISTÓRICO SEPARADA
    - Chama /atualizar_estado.php (Alertas) em intervalo fixo
    - Chama /salvar_dht.php (Histórico) com base em thresholds
 */
@@ -51,7 +52,7 @@ float lastSentTemp = NAN, lastSentHum = NAN; // Para o Threshold 1 (Histórico)
 
 
 // =============================================================
-// --- SEÇÃO DE FUNÇÕES (AGORA COMPLETAS) ---
+// --- SEÇÃO DE FUNÇÕES ---
 // =============================================================
 
 void printNetworkInfo() {
@@ -63,7 +64,7 @@ void printNetworkInfo() {
   Serial.println("============");
 }
 
-// --- FUNÇÃO DE SALVAR ATUALIZADA ---
+// --- FUNÇÃO DE SALVAR ---
 void saveConfigToEEPROM() {
   EEPROM.begin(EEPROM_SIZE);
   EEPROM.write(ADDR_MAGIC, EEPROM_MAGIC);
@@ -90,7 +91,7 @@ void saveConfigToEEPROM() {
   Serial.printf("URL salva: %s\n", serverURL);
 }
 
-// --- FUNÇÃO DE CARREGAR ATUALIZADA ---
+// --- FUNÇÃO DE CARREGAR ---
 void loadConfigFromEEPROM() {
   EEPROM.begin(EEPROM_SIZE);
   uint8_t magic = EEPROM.read(ADDR_MAGIC);
@@ -196,8 +197,6 @@ bool sendStateUpdate(float temp, float hum) {
   int httpCode = http.POST(postBody);
   if (httpCode > 0) {
     Serial.print("HTTP code: "); Serial.println(httpCode);
-    // String payload = http.getString(); // Opcional: ver se o alerta foi enviado
-    // Serial.println(payload);
   } else {
     Serial.print("Erro POST (Estado): "); Serial.println(http.errorToString(httpCode));
   }
@@ -214,7 +213,7 @@ void setup() {
   Serial.begin(115200);
   delay(50);
   Serial.println();
-  Serial.println("=== ESP8266 DHT11 - Iniciando (ARQUITETURA SEPARADA) ===");
+  Serial.println("=== ESP8266 DHT11 - Iniciando (CORS FIXED) ===");
   dht.begin();
 
   // ETAPA 1: Carrega a config (inclusive o serverURL)
@@ -246,11 +245,10 @@ void setup() {
   strcpy(serverURL, custom_server_url.getValue());
   saveConfigToEEPROM(); // Salva o serverURL e thresholds
 
-  // ETAPA 3: DERIVA o stateURL (a sua sugestão)
+  // ETAPA 3: DERIVA o stateURL
   strcpy(stateURL, serverURL);
   char* p = strstr(stateURL, "salvar_dht.php"); // Encontra "salvar_dht.php"
   if (p) {
-    // Se encontrou, substitui por "atualizar_estado.php"
     strcpy(p, "atualizar_estado.php");
   }
 
@@ -259,10 +257,20 @@ void setup() {
   Serial.print("URL Estado/Alerta: "); Serial.println(stateURL);
   Serial.println("---------------------------------");
 
-  // --- ENDPOINTS DO SERVIDOR WEB (AGORA COMPLETOS) ---
+  // --- ENDPOINTS DO SERVIDOR WEB (CORRIGIDOS) ---
   
-  // --- ENDPOINT /status OTIMIZADO (sem String) ---
-  server.on("/status", HTTP_GET, []() {
+  // CORREÇÃO: Removemos "HTTP_GET" para capturar todos os métodos (GET e OPTIONS)
+  server.on("/status", []() {
+    // SE for uma verificação de segurança (OPTIONS / Preflight)
+    if (server.method() == HTTP_OPTIONS) {
+      server.sendHeader("Access-Control-Allow-Origin", "*");
+      server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+      server.send(204); // Responde OK sem conteúdo
+      return;
+    }
+
+    // SE for o pedido normal (GET)
     char buffer[192]; 
     snprintf(buffer, sizeof(buffer),
       "{\"status\":\"ok\",\"temperatura\":%.2f,\"umidade\":%.2f,\"saved_temp\":%.2f,\"saved_hum\":%.2f}",
@@ -275,8 +283,16 @@ void setup() {
     server.send(200, "application/json", buffer); 
   });
   
-  // config: /config?temp=2.0&hum=10.0
-  server.on("/config", HTTP_GET, []() {
+  // CORREÇÃO: Mesma lógica para o /config
+  server.on("/config", []() {
+    if (server.method() == HTTP_OPTIONS) {
+      server.sendHeader("Access-Control-Allow-Origin", "*");
+      server.sendHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+      server.sendHeader("Access-Control-Allow-Headers", "*");
+      server.send(204);
+      return;
+    }
+
     bool updated = false;
     if (server.hasArg("temp")) {
       tempThreshold = server.arg("temp").toFloat();
@@ -295,38 +311,29 @@ void setup() {
     server.send(200, "application/json", js);
   });
 
-  server.on("/ping", HTTP_GET, []() {
+  server.on("/ping", []() {
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/plain", "pong");
   });
 
-  // --- NOVO ENDPOINT DE RESET VIA SOFTWARE (ATUALIZADO) ---
+  // --- RESET VIA SOFTWARE ---
   server.on("/resetwifi", HTTP_GET, []() {
     Serial.println("Recebida solicitação /resetwifi...");
-    
     server.send(200, "text/html", 
       "<h1>Configuracoes de WiFi limpas!</h1>"
-      "<p>O ESP vai reiniciar em 3 segundos e criar o portal 'AutoConnectAP'.</p>"
-      "<p>Conecte-se a essa rede para reconfigurar.</p>");
-    
+      "<p>O ESP vai reiniciar em 3 segundos...</p>");
     delay(3000); 
-
     WiFiManager wifiManager; 
     wifiManager.resetSettings();
-    
     EEPROM.begin(EEPROM_SIZE);
-    EEPROM.write(ADDR_MAGIC, 0x00); // Invalida o "magic number"
+    EEPROM.write(ADDR_MAGIC, 0x00); 
     EEPROM.commit();
     EEPROM.end();
-    
-    Serial.println("Configurações de WiFi e EEPROM limpas. Reiniciando agora...");
-    
     ESP.restart();
   });
 
-
   server.begin();
-  Serial.println("HTTP server iniciado (endpoints: /status, /config, /resetwifi)");
+  Serial.println("HTTP server iniciado.");
 }
 
 // =============================================================
@@ -339,7 +346,6 @@ void loop() {
   MDNS.update();
 
   // --- LÓGICA DE LEITURA (BLOCO 1) ---
-  // Apenas lê o sensor e atualiza as variáveis globais
   if (now - lastRead >= READ_INTERVAL) {
     lastRead = now;
 
@@ -349,33 +355,26 @@ void loop() {
       failCount++;
       return;
     }
-
-    // Atualiza as variáveis globais
     latestTemp = temp;
     latestHum  = hum;
     Serial.printf("Leitura -> Temp: %.2f °C  Hum: %.2f %%\n", temp, hum);
   }
 
-  // Se ainda não temos uma leitura válida, não faz nada
   if (isnan(latestTemp)) {
     delay(10);
     return;
   }
 
-  // --- LÓGICA DE ALERTA (BLOCO 2) - Baseado em Tempo Fixo ---
-  // Envia o estado atual para o servidor verificar alertas
+  // --- LÓGICA DE ALERTA (BLOCO 2) ---
   if (now - lastStateUpdate >= STATE_UPDATE_INTERVAL) {
     lastStateUpdate = now;
-    // Envia a última leitura válida
     sendStateUpdate(latestTemp, latestHum);
   }
 
-  // --- LÓGICA DE HISTÓRICO (BLOCO 3) - Baseado em Threshold 1 ---
-  // Decide se grava no DB (histórico)
-  // (Verifica se é a primeira leitura ou se os thresholds foram ultrapassados)
+  // --- LÓGICA DE HISTÓRICO (BLOCO 3) ---
   bool shouldSend = false;
   if (isnan(lastSentTemp) || isnan(lastSentHum)) {
-    shouldSend = true; // primeira vez salva
+    shouldSend = true;
     Serial.println("Primeiro envio para histórico.");
   } else {
     float dt = fabs(latestTemp - lastSentTemp);
@@ -388,10 +387,9 @@ void loop() {
   }
 
   if (shouldSend) {
-    // A função sendToServer() chama "salvar_dht.php"
     bool ok = sendToServer(latestTemp, latestHum); 
     if (ok) {
-      lastSentTemp = latestTemp; // Atualiza o último valor salvo
+      lastSentTemp = latestTemp;
       lastSentHum  = latestHum;
       Serial.println("Envio (Histórico) OK.");
       failCount = 0;
