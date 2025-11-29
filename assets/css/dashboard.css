@@ -6,6 +6,29 @@ body{ margin:0; padding:20px; font-family: Inter, system-ui, -apple-system, 'Seg
 .card-modern{ border:0; border-radius:var(--card-radius); box-shadow:0 10px 25px rgba(12,35,63,0.06); overflow:hidden }
 .grid{ display:grid; grid-template-columns: 1fr 360px; gap:18px; align-items:start }
 @media (max-width:900px){ .grid{ grid-template-columns:1fr } .right-col{ order:2 } }
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+  .app-shell {
+    margin: 0;
+  }
+  .grid {
+    gap: 10px;
+  }
+  .chart-area {
+    padding: 10px;
+  }
+  .chart-box {
+    height: 250px;
+  }
+  pre#log {
+    height: 150px;
+  }
+  .right-col {
+    order: 1; /* Re-order for smaller screens */
+  }
+}
 .chart-area{ padding:16px; border-radius:10px; background:linear-gradient(180deg,#ffffff,#fbfdff) }
 .chart-box{ width:100%; height:360px; display:flex; align-items:center; justify-content:center }
 canvas{ width:100% !important; height:100% !important }

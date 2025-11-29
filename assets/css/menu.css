@@ -58,6 +58,14 @@ body {
       border-right: 0;
       border-bottom: 1px solid #dee2e6;
     }
+    .sidebar .nav {
+      flex-direction: row;
+      justify-content: center;
+    }
+    .sidebar .nav-link {
+      margin-bottom: 0;
+      margin-right: 5px;
+    }
     .content-frame {
       position: relative;
       left: 0;
