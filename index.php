@@ -35,7 +35,7 @@
       </li>
     </ul>
     <hr>
-    <div class="small text-muted">Monitoramento v1.0</div>
+    <div class="small text-muted">Monitoramento v1.0.1</div>
   </div>
 
   <iframe name="contentFrame" src="pagina_dashboard.html" class="content-frame">
