@@ -1,5 +1,8 @@
 <?php
 // get_ultimo.php - versão robusta para depuração e CORS
+// Inclui config para garantir consistência
+require_once __DIR__ . '/../includes/config.php';
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
@@ -35,7 +38,7 @@ $row = $res->fetch_assoc();
 if (!$row) {
     echo json_encode(['status'=>'ok','mensagem'=>'sem dados']);
 } else {
-    // padroniza nomes
+    // Retorna os dados (a datahora já virá correta do banco)
     echo json_encode([
         'status' => 'ok',
         'temperatura' => floatval($row['temperatura']),

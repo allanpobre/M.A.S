@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const periodoBtns = document.getElementById('periodoBtns');
     const tabelaContainer = document.getElementById('tabela-container');
 
-    // Armazena a instância do DataTables
     let dataTableInstance = null;
 
     // ---------- Chart.js setup ----------
@@ -115,13 +114,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 1. Atualiza gráfico
             mainChart.data.labels = dados.map(d => {
-                const dt = new Date(d.t.replace(' ', 'T') + 'Z');
+                // --- CORREÇÃO HORA (Removemos o 'Z') ---
+                const dt = new Date(d.t.replace(' ', 'T'));
+                
                 return dt.toLocaleString('pt-BR', { 
                     day: 'numeric', 
                     month: 'numeric', 
                     hour: 'numeric', 
-                    minute: 'numeric',
-                    timeZone: 'America/Sao_Paulo'
+                    minute: 'numeric'
+                    // Removemos timezone explícito pois o browser já usará o local
                 });
             });
             mainChart.data.datasets[0].data = dados.map(d => d.temp);
@@ -182,9 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         for (const d of dados) {
-            const dt = new Date(d.t.replace(' ', 'T') + 'Z'); 
+            // --- CORREÇÃO HORA (Removemos o 'Z') ---
+            const dt = new Date(d.t.replace(' ', 'T')); 
+            
             const dataFormatada = dt.toLocaleString('pt-BR', {
-                timeZone: 'America/Sao_Paulo',
                 year: '2-digit', month: '2-digit', day: '2-digit',
                 hour: '2-digit', minute: '2-digit', second: '2-digit'
             });
@@ -206,8 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
             dataTableInstance = new DataTable('#tabelaHistorico', {
                 order: [[0, 'desc']], // Ordena pela data (coluna 0) decrescente
                 responsive: true,
-                
-                // ### ADICIONADO: TRADUÇÃO PT-BR ###
                 language: {
                     "emptyTable": "Nenhum registro encontrado",
                     "info": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
@@ -231,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         "sortDescending": ": Ordenar por ordem decrescente"
                     }
                 }
-                // ### FIM DA TRADUÇÃO ###
             });
         } catch (e) {
             console.error("Falha ao iniciar DataTables:", e);

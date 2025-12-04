@@ -1,11 +1,209 @@
-:root{ --card-radius:12px; }
-html,body{ height:100%; }
-body{ margin:0; padding:20px; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:transparent; color:#0b2540 }
-.app-shell{ max-width:1100px; margin:10px auto }
-.logo{ width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; background:linear-gradient(135deg,#3b82f6,#06b6d4); color:white }
-.card-modern{ border:0; border-radius:var(--card-radius); box-shadow:0 10px 25px rgba(12,35,63,0.06); overflow:hidden }
-.grid{ display:grid; grid-template-columns: 1fr 360px; gap:18px; align-items:start }
-@media (max-width:900px){ .grid{ grid-template-columns:1fr } .right-col{ order:2 } }
+:root {
+  /* --- Paleta M.A.S --- */
+  --primary-blue: #113f80;
+  --ice-blue: #84c8e6;
+  --alert-red: #df534f;
+  --bg-light: #f4f8fb;
+
+  /* --- OVERRIDE BOOTSTRAP 5 (A Mágica acontece aqui) --- */
+  /* Isso força o Bootstrap a usar suas cores nativamente */
+  
+  /* Primary = Azul Escuro (Botões principais, links, focus ring) */
+  --bs-primary: #113f80;
+  --bs-primary-rgb: 17, 63, 128;
+  
+  /* Info/Secondary = Azul Gelo (Detalhes, fundos suaves) */
+  --bs-info: #84c8e6;
+  --bs-info-rgb: 132, 200, 230;
+  
+  /* Danger = Vermelho Alerta */
+  --bs-danger: #df534f;
+  --bs-danger-rgb: 223, 83, 79;
+
+  /* Body */
+  --bs-body-bg: var(--bg-light);
+}
+
+/* Correção para botões Outline (Bordas) */
+.btn-outline-primary {
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+.btn-outline-primary:hover {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+/* Badge Secundária (Cinza/Gelo) */
+.badge.bg-secondary {
+  background-color: #6c757d !important; /* Mantém cinza para status neutro */
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', Inter, system-ui, Roboto, Arial, sans-serif;
+  background: transparent; /* Transparente pois o fundo vem do iframe/menu */
+  color: var(--text-dark);
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 10px auto;
+}
+
+/* Logo Pequena no Dashboard */
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, var(--primary-blue), #2a5a9e);
+  color: white;
+  box-shadow: 0 4px 6px rgba(17, 63, 128, 0.2);
+}
+
+/* Cards Principais */
+.card-modern {
+  border: 0;
+  border-radius: var(--card-radius);
+  box-shadow: 0 10px 25px rgba(17, 63, 128, 0.08); /* Sombra azulada sutil */
+  overflow: hidden;
+  background: white;
+  border-top: 4px solid var(--ice-blue); /* Detalhe "Gelo" no topo */
+}
+
+/* Layout Grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Área do Gráfico */
+.chart-area {
+  padding: 20px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f0f7fa); /* Degradê sutil para gelo */
+  border: 1px solid #eef6f9;
+}
+
+.chart-box {
+  width: 100%;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Mini Cards (Lateral) */
+.mini-card {
+  padding: 15px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  margin-bottom: 15px;
+}
+
+/* Log Box */
+pre#log {
+  background: #1e293b; /* Fundo escuro para terminal */
+  color: #00ff9d; /* Texto estilo terminal hacker/matrix */
+  border: 0;
+  margin: 0;
+  height: 240px;
+  overflow: auto;
+  font-size: 0.8rem;
+  padding: 10px;
+  border-radius: 6px;
+  font-family: 'Consolas', monospace;
+}
+
+/* Abas (Tabs) */
+#infoTabs {
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 10px;
+}
+
+#infoTabs .nav-link {
+  color: #6b7280;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-bottom: 3px solid transparent;
+}
+
+#infoTabs .nav-link:hover {
+  color: var(--primary-blue);
+  background: transparent;
+}
+
+#infoTabs .nav-link.active {
+  color: var(--primary-blue);
+  font-weight: 700;
+  background: transparent;
+  border-bottom: 3px solid var(--primary-blue); /* Linha ativa azul escuro */
+}
+
+#infoTabsContent {
+  padding-top: 0.5rem;
+}
+
+/* Modal Tabs */
+#modalTabs .nav-link {
+  font-size: 0.95rem;
+  color: var(--primary-blue);
+}
+#modalTabs .nav-link.active {
+  background-color: var(--ice-blue);
+  color: var(--primary-blue);
+  font-weight: bold;
+}
+
+/* Botões Customizados */
+.btn-primary {
+  background-color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+.btn-primary:hover {
+  background-color: #0d3266;
+  border-color: #0d3266;
+}
+.btn-outline-primary {
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+.btn-outline-primary:hover {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+/* Responsividade (Mantendo sua lógica original) */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .right-col {
+    order: 2;
+  }
+}
+
 @media (max-width: 600px) {
   body {
     padding: 10px;
@@ -14,7 +212,7 @@ body{ margin:0; padding:20px; font-family: Inter, system-ui, -apple-system, 'Seg
     margin: 0;
   }
   .grid {
-    gap: 10px;
+    gap: 15px;
   }
   .chart-area {
     padding: 10px;
@@ -26,19 +224,9 @@ body{ margin:0; padding:20px; font-family: Inter, system-ui, -apple-system, 'Seg
     height: 150px;
   }
   .right-col {
-    order: 1; /* Re-order for smaller screens */
+    order: 1; /* Painel de controle sobe no mobile */
+  }
+  .logo {
+    display: none; /* Oculta logo interna no mobile para ganhar espaço */
   }
 }
-.chart-area{ padding:16px; border-radius:10px; background:linear-gradient(180deg,#ffffff,#fbfdff) }
-.chart-box{ width:100%; height:360px; display:flex; align-items:center; justify-content:center }
-canvas{ width:100% !important; height:100% !important }
-.mini-card{ padding:12px; border-radius:10px; background:#fff; box-shadow:0 6px 18px rgba(12,35,63,0.04); }
-pre#log{ background:transparent; border:0; margin:0; height:240px; overflow:auto; font-size:0.8rem; } 
-
-/* Estilos para as abas da coluna direita */
-#infoTabs .nav-link { color: #6b7280; font-size: 0.9rem; padding: 0.5rem 0.8rem;}
-#infoTabs .nav-link.active { color: #0b2540; font-weight: 600; }
-#infoTabsContent { padding-top: 1rem; } 
-
-/* Estilos para as abas do Modal */
-#modalTabs .nav-link { font-size: 0.95rem; }

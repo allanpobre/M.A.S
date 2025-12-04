@@ -4,11 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Dashboard — Monitor de Sensores</title>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
   <link href="assets/css/dashboard.css" rel="stylesheet">
 </head>
 <body>
@@ -67,14 +65,14 @@
                 <div>
                   <div class="d-flex align-items-baseline gap-2">
                     <div style="font-size:0.85rem;color:#6b7280">Endpoint ESP</div>
-                    <small class="text-muted ms-2" id="endpointHint">(Deve apontar para /status do ESP)</small>
+                    <small class="text-muted ms-2" id="endpointHint">(Deve apontar para /status)</small>
                   </div>
                   <div style="font-weight:600;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="endpointLabel">...</div>
                 </div>
                 <div class="d-flex flex-column align-items-end">
                   <div class="d-flex gap-1">
-                    <button id="btnCopy" class="btn btn-sm btn-outline-secondary" title="Copiar endpoint"><i class="bi bi-clipboard"></i></button>
-                    <button id="btnEdit" class="btn btn-sm btn-outline-secondary" title="Editar endpoint"><i class="bi bi-pencil"></i></button>
+                    <button id="btnCopy" class="btn btn-sm btn-outline-secondary" title="Copiar"><i class="bi bi-clipboard"></i></button>
+                    <button id="btnEdit" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></button>
                   </div>
                 </div>
               </div>
@@ -123,7 +121,6 @@
             </div>
           </div>
         </div>
-
         <footer style="margin-top:16px;text-align:center;color:#475569;font-size:0.9rem">Página de Monitoramento — clique no <i class="bi bi-gear"></i> para configurar.</footer>
       </div>
     </div>
@@ -137,69 +134,62 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-
           <ul class="nav nav-tabs" id="modalTabs" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="modal-tab-conexao-btn" data-bs-toggle="tab" data-bs-target="#modal-tab-conexao" type="button" role="tab">Conexão ESP</button>
+              <button class="nav-link active" id="modal-tab-conexao-btn" data-bs-toggle="tab" data-bs-target="#modal-tab-conexao" type="button" role="tab">Conexão</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="modal-tab-thresholds-btn" data-bs-toggle="tab" data-bs-target="#modal-tab-thresholds" type="button" role="tab">Thresholds ESP</button>
+              <button class="nav-link" id="modal-tab-thresholds-btn" data-bs-toggle="tab" data-bs-target="#modal-tab-thresholds" type="button" role="tab">Thresholds</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="modal-tab-dashboard-btn" data-bs-toggle="tab" data-bs-target="#modal-tab-dashboard" type="button" role="tab">Dashboard</button>
+              <button class="nav-link" id="modal-tab-dashboard-btn" data-bs-toggle="tab" data-bs-target="#modal-tab-dashboard" type="button" role="tab">Visual</button>
             </li>
           </ul>
 
           <div class="tab-content pt-3" id="modalTabsContent">
             <div class="tab-pane fade show active" id="modal-tab-conexao" role="tabpanel">
               <div class="mb-3">
-                <label class="form-label">Endpoint do ESP (normalmente /status)</label>
+                <label class="form-label">Endpoint do ESP</label>
                 <input id="modalEndpoint" class="form-control" placeholder="http://192.168.x.x/status" />
               </div>
               <div class="mb-3">
-                <label class="form-label">Intervalo de Leitura do ESP (ms)</label>
+                <label class="form-label">Intervalo (ms)</label>
                 <input id="modalInterval" type="number" class="form-control" min="500" step="100"/>
               </div>
             </div>
-
             <div class="tab-pane fade" id="modal-tab-thresholds" role="tabpanel">
-              <p class="form-text">Estes valores são enviados ao ESP para definir quando ele deve salvar dados no **histórico** (não afeta alertas).</p>
+              <p class="form-text">Limiares para salvar no Histórico (BD).</p>
               <div class="mb-3">
-                <label class="form-label">Threshold temperatura (°C)</label>
+                <label class="form-label">Dif. Temperatura (°C)</label>
                 <input id="modalTempThreshold" type="number" step="0.1" class="form-control" />
               </div>
               <div class="mb-3">
-                <label class="form-label">Threshold umidade (%)</label>
+                <label class="form-label">Dif. Umidade (%)</label>
                 <input id="modalHumThreshold" type="number" step="0.1" class="form-control" />
               </div>
             </div>
-
              <div class="tab-pane fade" id="modal-tab-dashboard" role="tabpanel">
-              <p class="form-text">Configurações de exibição e comportamento do dashboard.</p>
                <div class="mb-3">
-                  <label class="form-label">Máx pontos no gráfico</label>
-                  <input id="modalMaxPoints" type="number" class="form-control" min="4" max="240" />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Usar fallback em erro ESP</label>
-                  <select id="modalFallback" class="form-select">
-                    <option value="off">Desligado</option>
-                    <option value="random">Inserir valor random</option>
-                  </select>
-                  <div class="form-text">Se o ESP falhar, o gráfico pode mostrar um valor aleatório ou parar.</div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Tentativas ESP até offline</label>
-                  <input id="modalMaxFails" type="number" class="form-control" min="1" max="10" />
-                  <div class="form-text">Após quantas falhas seguidas do ESP o status muda para "Offline".</div>
-                </div>
+                 <label class="form-label">Máx pontos no gráfico</label>
+                 <input id="modalMaxPoints" type="number" class="form-control" min="4" max="240" />
+               </div>
+               <div class="mb-3">
+                 <label class="form-label">Modo Fallback</label>
+                 <select id="modalFallback" class="form-select">
+                   <option value="off">Desligado</option>
+                   <option value="random">Simular (Random)</option>
+                 </select>
+               </div>
+               <div class="mb-3">
+                 <label class="form-label">Falhas até Offline</label>
+                 <input id="modalMaxFails" type="number" class="form-control" min="1" max="10" />
+               </div>
             </div>
-
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" id="modalSave" class="btn btn-primary" data-bs-dismiss="modal">Salvar e Aplicar</button>
+          <button type="button" id="modalSave" class="btn btn-primary" data-bs-dismiss="modal">Salvar</button>
         </div>
       </div>
     </div>

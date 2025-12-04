@@ -1,12 +1,12 @@
 <?php
-// salvar_dht.php - VERSÃO SIMPLIFICADA
+// salvar_dht.php - VERSÃO CORRIGIDA (TIMEZONE)
 // Apenas salva os dados no banco de dados (tabela dht) para o histórico.
-// A lógica de notificação FOI REMOVIDA daqui.
+
+// IMPORTANTE: Traz o Timezone correto (Brasília)
+require_once __DIR__ . '/../includes/config.php';
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
-// --- NOTA: O 'require_once' da função de notificação FOI REMOVIDO ---
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -57,6 +57,8 @@ if (!is_numeric($temp_raw) || !is_numeric($hum_raw)) {
 
 $temp = floatval($temp_raw);
 $hum  = floatval($hum_raw);
+
+// AGORA PEGA A HORA CERTA (Brasília) GRAÇAS AO config.php
 $datahora = date('Y-m-d H:i:s');
 
 try {
@@ -73,9 +75,12 @@ try {
     $insertedId = $stmt->insert_id;
     $stmt->close();
 
-    // --- TODO O BLOCO DE NOTIFICAÇÃO FOI REMOVIDO ---
-
-    echo json_encode(["status" => "ok", "mensagem" => "Salvo no histórico", "id" => $insertedId]);
+    echo json_encode([
+        "status" => "ok", 
+        "mensagem" => "Salvo no histórico", 
+        "id" => $insertedId,
+        "hora_salva" => $datahora
+    ]);
     $conn->close();
     exit;
 
